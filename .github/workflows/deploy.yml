@@ -29,15 +29,17 @@ jobs:
 
           cd ~/DevOps_final_api || exit
 
-          pip3 install -r requirements.txt
-
           git fetch origin
           git reset --hard origin/master
+
+          pip3 install -r requirements.txt
 
           pkill gunicorn || true
 
           cd api
 
           nohup gunicorn -b 0.0.0.0:5000 apiDevOpsFinal:app &
+
+          exit
 
           EOF
