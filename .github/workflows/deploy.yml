@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
@@ -29,7 +29,8 @@ jobs:
 
           cd ~/DevOps_final_api/api || exit
 
-          git pull origin main
+          git fetch origin
+          git reset --hard origin/master
 
           pkill gunicorn || true
 
