@@ -38,7 +38,8 @@ jobs:
 
           cd api
 
-          nohup gunicorn -b 0.0.0.0:5000 apiDevOpsFinal:app &
+          nohup gunicorn -b 0.0.0.0:5000 apiDevOpsFinal:app > output.log 2>&1 < /dev/null &
+          disown
 
           exit
 
