@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DevOps Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<h1>📊 DevOps Project Dashboard</h1>
+
+<div class="container">
+
+    <div class="card">
+        <h3>Average Metrics</h3>
+        <canvas id="metricsChart"></canvas>
+    </div>
+
+    <div class="card">
+        <h3>High Delay vs Normal</h3>
+        <canvas id="delayChart"></canvas>
+    </div>
+
+    <div class="card">
+        <h3>Margin Distribution</h3>
+        <canvas id="marginChart"></canvas>
+    </div>
+
+</div>
+
+<script>
+const API_URL = "http://3.144.178.106:5000";
+
+// -----------------------------
+// LOAD DATA
+// -----------------------------
+async function loadDashboard() {
+    const metrics = await fetch(`${API_URL}/metrics`).then(res => res.json());
+    const projects = await fetch(`${API_URL}/projects`).then(res => res.json());
+
+    renderMetrics(metrics);
+    renderDelay(projects);
+    renderMargin(projects);
+}
+
+// -----------------------------
+// METRICS CHART
+// -----------------------------
+function renderMetrics(data) {
+    new Chart(document.getElementById("metricsChart"), {
+        type: 'bar',
+        data: {
+            labels: ["Margin", "Delay", "Risk Mitigation"],
+            datasets: [{
+                label: "Averages",
+                data: [
+                    data.avg_margin,
+                    data.avg_delay,
+                    data.avg_risk_mitigation
+                ]
+            }]
+        }
+    });
+}
+
+// -----------------------------
+// DELAY PIE
+// -----------------------------
+function renderDelay(data) {
+    let high = data.filter(p => p.high_delay_flag).length;
+    let normal = data.length - high;
+
+    new Chart(document.getElementById("delayChart"), {
+        type: 'pie',
+        data: {
+            labels: ["High Delay", "Normal"],
+            datasets: [{
+                data: [high, normal]
+            }]
+        }
+    });
+}
+
+// -----------------------------
+// MARGIN HISTOGRAM
+// -----------------------------
+function renderMargin(data) {
+    let buckets = [0,0,0,0];
+
+    data.forEach(p => {
+        if (p.final_margin_pct < 0.1) buckets[0]++;
+        else if (p.final_margin_pct < 0.2) buckets[1]++;
+        else if (p.final_margin_pct < 0.3) buckets[2]++;
+        else buckets[3]++;
+    });
+
+    new Chart(document.getElementById("marginChart"), {
+        type: 'bar',
+        data: {
+            labels: ["<10%", "10-20%", "20-30%", "30%+"],
+            datasets: [{
+                label: "Projects",
+                data: buckets
+            }]
+        }
+    });
+}
+
+// -----------------------------
+loadDashboard();
+</script>
+
+</body>
+</html>
